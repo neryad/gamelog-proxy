@@ -1,0 +1,48 @@
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).end();
+
+  try {
+    // 1. Obtener token de Twitch
+    const tokenRes = await fetch(
+      `https://id.twitch.tv/oauth2/token?client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`,
+      { method: "POST" },
+    );
+
+    const tokenData = await tokenRes.json();
+    console.log("Token response:", JSON.stringify(tokenData));
+
+    if (!tokenData.access_token) {
+      return res
+        .status(500)
+        .json({ error: "Failed to get token", detail: tokenData });
+    }
+
+    // 2. Leer el body del request
+    const body = await new Promise((resolve) => {
+      let data = "";
+      req.on("data", (chunk) => (data += chunk));
+      req.on("end", () => resolve(data));
+    });
+
+    // 3. Llamar a IGDB
+    const igdbRes = await fetch("https://api.igdb.com/v4/games", {
+      method: "POST",
+      headers: {
+        "Client-ID": process.env.TWITCH_CLIENT_ID,
+        Authorization: `Bearer ${tokenData.access_token}`,
+        "Content-Type": "text/plain",
+      },
+      body: body,
+    });
+
+    const data = await igdbRes.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message });
+  }
+}
