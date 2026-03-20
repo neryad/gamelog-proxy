@@ -10,6 +10,13 @@
 
 **gamelog-proxy** is a minimal Vercel serverless proxy that sits between the [Playlogged](https://github.com/your-username/playlogged) mobile app and the [IGDB API](https://api-docs.igdb.com/). The IGDB API requires a Twitch OAuth2 token for every request — a secret that cannot be safely embedded in a mobile client. This proxy handles token acquisition server-side using the Twitch client credentials flow, injects the required auth headers, and forwards the request to IGDB, keeping all credentials out of the app.
 
+**Features:**
+- ✅ Secure server-side token management (credentials never exposed to client)
+- ✅ Transparent IGDB request forwarding with Apicalypse query support
+- ✅ Rate limiting (30 req/min per IP) to prevent abuse
+- ✅ Body size limit (10 KB) to prevent large payloads
+- ✅ Proper HTTP error propagation and CORS support
+
 ---
 
 ## 📡 Endpoint
@@ -133,4 +140,4 @@ That's it — Vercel automatically detects the `api/` folder and deploys `games.
 
 ## 📄 License
 
-MIT © [Your Name](https://github.com/your-username)
+MIT License — see [LICENSE](LICENSE) for details.
